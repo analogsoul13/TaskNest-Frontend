@@ -1,240 +1,185 @@
-// AuthPage.jsx
 import React, { useState, useEffect } from 'react';
-import 'animate.css'; // Import animate.css
+import 'animate.css';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [animation, setAnimation] = useState('animate__fadeIn');
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
-    name: '',
-    profilePicture: '',
-    role: 'client'
+    profilePicUrl: ''
   });
-
-  // Handle animation when switching between forms
-  useEffect(() => {
-    // Trigger animation on form change
-    setAnimation('animate__animated animate__fadeIn');
-    
-    // Remove animation class after animation completes
-    const timer = setTimeout(() => {
-      setAnimation('');
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [isLogin]);
-
-  const handleSwitchForm = (loginStatus) => {
-    // Apply exit animation first
-    setAnimation('animate__animated animate__fadeOut');
-    
-    // Change form after exit animation completes
-    setTimeout(() => {
-      setIsLogin(loginStatus);
-      setAnimation('animate__animated animate__fadeIn');
-    }, 300);
-  };
+  const [animation, setAnimation] = useState('animate__fadeIn');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prevData => ({
+      ...prevData,
       [name]: value
-    });
+    }));
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Login data:', {
-      email: formData.email,
-      password: formData.password
-    });
-    // Add your login logic here
+    setAnimation('animate__pulse');
+    setTimeout(() => setAnimation('animate__fadeIn'), 1000);
+    
+    console.log('Form submitted:', formData);
+    
+    if (isLogin) {
+      console.log('Logging in with:', {
+        email: formData.email,
+        password: formData.password
+      });
+    } else {
+      console.log('Registering with:', formData);
+    }
   };
 
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    console.log('Register data:', formData);
-    // Add your registration logic here
+  const toggleAuthMode = () => {
+
+    setAnimation('animate__fadeOut');
+    
+    setTimeout(() => {
+      setIsLogin(!isLogin);
+      setAnimation('animate__fadeIn');
+    }, 500);
   };
+
+  useEffect(() => {
+    setAnimation('animate__fadeIn');
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-100 px-4 py-6 sm:px-6 md:px-8" 
-         style={{
-           backgroundImage: `
-             radial-gradient(at 47% 33%, hsl(232.00, 58%, 11%) 0, transparent 59%), 
-             radial-gradient(at 82% 65%, hsl(218.00, 39%, 11%) 0, transparent 55%)
-           `
-         }}>
-      <div className="w-full max-w-md animate__animated animate__fadeInUp">
-        <div className="bg-gray-800 shadow-xl rounded-xl overflow-hidden">
-          {/* Tabs */}
-          <div className="flex">
-            <button 
-              className={`w-1/2 py-3 sm:py-4 text-center font-medium transition-colors duration-300 text-sm sm:text-base ${isLogin ? 'bg-gray-700 border-b-2 border-indigo-600' : ''}`}
-              onClick={() => handleSwitchForm(true)}
-            >
-              Log In
-            </button>
-            <button 
-              className={`w-1/2 py-3 sm:py-4 text-center font-medium transition-colors duration-300 text-sm sm:text-base ${!isLogin ? 'bg-gray-700 border-b-2 border-indigo-600' : ''}`}
-              onClick={() => handleSwitchForm(false)}
-            >
-              Register
-            </button>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 to-indigo-600">
+      <div className={`w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl animate__animated ${animation}`}>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            {isLogin ? 'Welcome Back' : 'Join Us Today'}
+          </h1>
+          <p className="mt-2 text-gray-500">
+            {isLogin ? 'Sign in to your account' : 'Create your new account'}
+          </p>
+        </div>
+
+        {/* Toggle buttons with improved styling */}
+        <div className="flex p-1 bg-gray-100 rounded-lg shadow-inner mb-6" role="group">
+          <button
+            type="button"
+            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 ease-in-out ${
+              isLogin
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'bg-transparent text-gray-700 hover:bg-gray-200'
+            }`}
+            onClick={() => isLogin ? null : toggleAuthMode()}
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 ease-in-out ${
+              !isLogin
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'bg-transparent text-gray-700 hover:bg-gray-200'
+            }`}
+            onClick={() => !isLogin ? null : toggleAuthMode()}
+          >
+            Register
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {/* Only show name field when registering */}
+          {!isLogin && (
+            <div className="animate__animated animate__fadeInDown">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required={!isLogin}
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+
+          {/* Email field */}
+          <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.1s' }}>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+            />
           </div>
 
-          {/* Form Container with Animation */}
-          <div className={animation}>
-            {/* Login Form */}
-            {isLogin ? (
-              <div className="p-4 sm:p-6 md:p-8">
-                <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Welcome Back</h1>
-                <form onSubmit={handleLoginSubmit}>
-                  <div className="mb-4 sm:mb-5">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="login-email">Email</label>
-                    <input 
-                      id="login-email" 
-                      type="email" 
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="your@email.com" 
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-5 sm:mb-6">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="login-password">Password</label>
-                    <input 
-                      id="login-password" 
-                      type="password" 
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="••••••••" 
-                      required
-                    />
-                    <div className="mt-2 text-right">
-                      <a href="#" className="text-xs sm:text-sm text-indigo-400 hover:text-indigo-300">Forgot password?</a>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white font-medium py-2 sm:py-3 px-4 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 animate__animated animate__pulse animate__infinite animate__slower text-sm sm:text-base"
-                  >
-                    Log In
-                  </button>
-                </form>
-              </div>
-            ) : (
-              /* Register Form */
-              <div className="p-4 sm:p-6 md:p-8">
-                <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Create Account</h1>
-                <form onSubmit={handleRegisterSubmit}>
-                  <div className="mb-3 sm:mb-5">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="register-name">Full Name</label>
-                    <input 
-                      id="register-name" 
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="John Doe" 
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3 sm:mb-5">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="register-email">Email</label>
-                    <input 
-                      id="register-email" 
-                      type="email" 
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="your@email.com" 
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3 sm:mb-5">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="register-password">Password</label>
-                    <input 
-                      id="register-password" 
-                      type="password" 
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="••••••••" 
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3 sm:mb-5">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2" htmlFor="profile-picture">Profile Picture URL</label>
-                    <input 
-                      id="profile-picture" 
-                      type="url" 
-                      name="profilePicture"
-                      value={formData.profilePicture}
-                      onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-200 text-sm sm:text-base" 
-                      placeholder="https://example.com/your-image.jpg"
-                    />
-                  </div>
-
-                  <div className="mb-4 sm:mb-6">
-                    <label className="block text-sm font-medium mb-1 sm:mb-2">I am a</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      <div 
-                        className={`flex items-center p-3 sm:p-4 border rounded-lg bg-gray-700 cursor-pointer transition-colors duration-200 ${formData.role === 'client' ? 'border-indigo-500' : 'border-gray-600 hover:border-indigo-500'}`}
-                        onClick={() => setFormData({...formData, role: 'client'})}
-                      >
-                        <label className="flex items-center cursor-pointer w-full">
-                          <div className="w-4 sm:w-5 h-4 sm:h-5 rounded-full border border-gray-400 flex items-center justify-center mr-2 sm:mr-3">
-                            {formData.role === 'client' && (
-                              <div className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-indigo-500"></div>
-                            )}
-                          </div>
-                          <span className="text-sm sm:text-base">Client</span>
-                        </label>
-                      </div>
-
-                      <div 
-                        className={`flex items-center p-3 sm:p-4 border rounded-lg bg-gray-700 cursor-pointer transition-colors duration-200 ${formData.role === 'freelancer' ? 'border-indigo-500' : 'border-gray-600 hover:border-indigo-500'}`}
-                        onClick={() => setFormData({...formData, role: 'freelancer'})}
-                      >
-                        <label className="flex items-center cursor-pointer w-full">
-                          <div className="w-4 sm:w-5 h-4 sm:h-5 rounded-full border border-gray-400 flex items-center justify-center mr-2 sm:mr-3">
-                            {formData.role === 'freelancer' && (
-                              <div className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-indigo-500"></div>
-                            )}
-                          </div>
-                          <span className="text-sm sm:text-base">Freelancer</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white font-medium py-2 sm:py-3 px-4 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 animate__animated animate__pulse animate__infinite animate__slower text-sm sm:text-base"
-                  >
-                    Create Account
-                  </button>
-                </form>
-              </div>
-            )}
+          {/* Password field */}
+          <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.2s' }}>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+            />
           </div>
+
+          {/* Only show profile picture URL field when registering */}
+          {!isLogin && (
+            <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.3s' }}>
+              <label htmlFor="profilePicUrl" className="block text-sm font-medium text-gray-700">
+                Profile Picture URL
+              </label>
+              <input
+                id="profilePicUrl"
+                name="profilePicUrl"
+                type="url"
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+                placeholder="https://example.com/your-photo.jpg"
+                value={formData.profilePicUrl}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+
+          {/* Submit button */}
+          <div className="animate__animated animate__fadeInUp" style={{ animationDelay: '0.4s' }}>
+            <button
+              type="submit"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105"
+            >
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </button>
+          </div>
+        </form>
+
+        {/* Toggle link with animation */}
+        <div className="text-center mt-6 animate__animated animate__fadeInUp" style={{ animationDelay: '0.5s' }}>
+          <button
+            type="button"
+            onClick={toggleAuthMode}
+            className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors duration-300"
+          >
+            {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+          </button>
         </div>
       </div>
     </div>
