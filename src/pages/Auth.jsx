@@ -1,189 +1,146 @@
-import React, { useState, useEffect } from 'react';
-import 'animate.css';
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { loginApi, registerApi } from "../services/authServices";
+import { login } from "../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    profilePicUrl: ''
-  });
-  const [animation, setAnimation] = useState('animate__fadeIn');
+    const dispatch = useDispatch();
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        role: "client", // Default role
+        profilePic: "", // Profile Picture URL
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
+    const nav = useNavigate()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setAnimation('animate__pulse');
-    setTimeout(() => setAnimation('animate__fadeIn'), 1000);
-    
-    console.log('Form submitted:', formData);
-    
-    if (isLogin) {
-      console.log('Logging in with:', {
-        email: formData.email,
-        password: formData.password
-      });
-    } else {
-      console.log('Registering with:', formData);
-    }
-  };
+    // Handle input changes
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-  const toggleAuthMode = () => {
+    // Handle Login
+    const handleLogin = async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const response = await loginApi({ email: formData.email, password: formData.password });
+            if (response.status === 200) {
+                console.log(response);
+                nav('/dashboard')
+                dispatch(login({
+                  user: response.data.user,
+                  token: response.data.token
+                })); // Save user info in Redux
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Login failed. Try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    setAnimation('animate__fadeOut');
-    
-    setTimeout(() => {
-      setIsLogin(!isLogin);
-      setAnimation('animate__fadeIn');
-    }, 500);
-  };
+    // Handle Register
+    const handleRegister = async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const response = await registerApi(formData);
+            if (response.status === 201) {
+                setIsLogin(true); // Switch to login after successful registration
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Registration failed. Try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  useEffect(() => {
-    setAnimation('animate__fadeIn');
-  }, []);
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
+                    {isLogin ? "Login" : "Register"}
+                </h2>
+                
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 to-indigo-600">
-      <div className={`w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl animate__animated ${animation}`}>
-        <div className="text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            {isLogin ? 'Welcome Back' : 'Join Us Today'}
-          </h1>
-          <p className="mt-2 text-gray-500">
-            {isLogin ? 'Sign in to your account' : 'Create your new account'}
-          </p>
-        </div>
+                <div className="space-y-4">
+                    {!isLogin && (
+                        <>
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Full Name"
+                                onChange={handleChange}
+                                required
+                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
 
-        {/* Toggle buttons with improved styling */}
-        <div className="flex p-1 bg-gray-100 rounded-lg shadow-inner mb-6" role="group">
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 ease-in-out ${
-              isLogin
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                : 'bg-transparent text-gray-700 hover:bg-gray-200'
-            }`}
-            onClick={() => isLogin ? null : toggleAuthMode()}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300 ease-in-out ${
-              !isLogin
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                : 'bg-transparent text-gray-700 hover:bg-gray-200'
-            }`}
-            onClick={() => !isLogin ? null : toggleAuthMode()}
-          >
-            Register
-          </button>
-        </div>
+                            <input
+                                type="text"
+                                name="profilePic"
+                                placeholder="Profile Picture URL"
+                                onChange={handleChange}
+                                required
+                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                        </>
+                    )}
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          {/* Only show name field when registering */}
-          {!isLogin && (
-            <div className="animate__animated animate__fadeInDown">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required={!isLogin}
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={handleChange}
-              />
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        onChange={handleChange}
+                        required
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        onChange={handleChange}
+                        required
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+
+                    {!isLogin && (
+                        <select
+                            name="role"
+                            onChange={handleChange}
+                            value={formData.role}
+                            className="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="client">Client</option>
+                            <option value="freelancer">Freelancer</option>
+                        </select>
+                    )}
+
+                    <button
+                        onClick={isLogin ? handleLogin : handleRegister}
+                        disabled={loading}
+                        className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-400"
+                    >
+                        {loading ? "Processing..." : isLogin ? "Login" : "Register"}
+                    </button>
+                </div>
+
+                <p
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="mt-4 text-center text-sm text-blue-500 cursor-pointer hover:underline"
+                >
+                    {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+                </p>
             </div>
-          )}
-
-          {/* Email field */}
-          <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.1s' }}>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Password field */}
-          <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.2s' }}>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Only show profile picture URL field when registering */}
-          {!isLogin && (
-            <div className="animate__animated animate__fadeInDown" style={{ animationDelay: '0.3s' }}>
-              <label htmlFor="profilePicUrl" className="block text-sm font-medium text-gray-700">
-                Profile Picture URL
-              </label>
-              <input
-                id="profilePicUrl"
-                name="profilePicUrl"
-                type="url"
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-                placeholder="https://example.com/your-photo.jpg"
-                value={formData.profilePicUrl}
-                onChange={handleChange}
-              />
-            </div>
-          )}
-
-          {/* Submit button */}
-          <div className="animate__animated animate__fadeInUp" style={{ animationDelay: '0.4s' }}>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105"
-            >
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </button>
-          </div>
-        </form>
-
-        {/* Toggle link with animation */}
-        <div className="text-center mt-6 animate__animated animate__fadeInUp" style={{ animationDelay: '0.5s' }}>
-          <button
-            type="button"
-            onClick={toggleAuthMode}
-            className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors duration-300"
-          >
-            {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
-          </button>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Auth;
