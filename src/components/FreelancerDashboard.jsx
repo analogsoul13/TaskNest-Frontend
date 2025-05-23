@@ -14,6 +14,24 @@ const FreelancerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [appliedTasks, setAppliedTasks] = useState([]);
 
+  const budgetRanges = {
+    1: [0, 500],
+    2: [500, 1000],
+    3: [1000, Infinity]
+  };
+
+  const categories = [
+    "Web Development",
+    "Mobile Development",
+    "UI/UX Design",
+    "Graphic Design",
+    "Writing",
+    "Data Science",
+    "Marketing",
+    "Video Editing",
+    "Voice Over",
+    "Database"
+  ];
 
   const fetchAllJobs = async () => {
     setLoading(true)
@@ -36,11 +54,7 @@ const FreelancerDashboard = () => {
     fetchAllJobs()
   }, [searchTerm, selectedCategories])
 
-  const budgetRanges = {
-    1: [0, 500],
-    2: [500, 1000],
-    3: [1000, Infinity]
-  };
+
 
   const filteredTasks = tasks.filter((task) => {
     // Search logic
@@ -59,18 +73,6 @@ const FreelancerDashboard = () => {
     return matchesSearch && matchesCategory && matchesBudget
   })
 
-  const categories = [
-    "Web Development",
-    "Mobile Development",
-    "UI/UX Design",
-    "Graphic Design",
-    "Writing",
-    "Data Science",
-    "Marketing",
-    "Video Editing",
-    "Voice Over",
-    "Database"
-  ];
 
   const toggleCategory = (category) => {
     if (selectedCategories.includes(category)) {
