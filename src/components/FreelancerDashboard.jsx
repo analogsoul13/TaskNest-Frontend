@@ -10,6 +10,7 @@ const FreelancerDashboard = () => {
 
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [appliedTasks, setAppliedTasks] = useState([]);
 
@@ -35,6 +36,12 @@ const FreelancerDashboard = () => {
     fetchAllJobs()
   }, [searchTerm, selectedCategories])
 
+  const budgetRanges = {
+    1: [0, 500],
+    2: [500, 1000],
+    3: [1000, Infinity]
+  };
+
   const filteredTasks = tasks.filter((task) => {
     // Search logic
     const matchesSearch = searchTerm === "" || [task.title, task.description, task.category]
@@ -43,7 +50,13 @@ const FreelancerDashboard = () => {
     // Category Logic
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(task.category)
 
-    return matchesSearch && matchesCategory
+    // Budget Logic
+    const matchesBudget = selectedBudget.length === 0 || selectedBudget.some(id => {
+      const [min, max] = budgetRanges[id];
+      return task.budget >= min && task.budget <= max
+    })
+
+    return matchesSearch && matchesCategory && matchesBudget
   })
 
   const categories = [
@@ -66,6 +79,16 @@ const FreelancerDashboard = () => {
       setSelectedCategories([...selectedCategories, category]);
     }
   };
+
+  const toggleBudget = (rangeId) => {
+    if (selectedBudget.includes(rangeId)) {
+      setSelectedBudget(selectedBudget.filter(id => id !== rangeId))
+    } else {
+      setSelectedBudget([...selectedBudget, rangeId])
+    }
+  };
+
+
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -117,6 +140,7 @@ const FreelancerDashboard = () => {
                 <input
                   id="budget-low"
                   type="checkbox"
+                  onChange={() => toggleBudget(1)}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
                 <label htmlFor="budget-low" className="ml-2 text-sm text-gray-700">
@@ -127,6 +151,7 @@ const FreelancerDashboard = () => {
                 <input
                   id="budget-medium"
                   type="checkbox"
+                  onChange={() => toggleBudget(2)}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
                 <label htmlFor="budget-medium" className="ml-2 text-sm text-gray-700">
@@ -137,6 +162,7 @@ const FreelancerDashboard = () => {
                 <input
                   id="budget-high"
                   type="checkbox"
+                  onChange={() => toggleBudget(3)}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
                 <label htmlFor="budget-high" className="ml-2 text-sm text-gray-700">
