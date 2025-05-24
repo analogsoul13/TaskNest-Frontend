@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Search, ChevronRight, Check, Clock, IndianRupeeIcon } from 'lucide-react';
 import Navbar from './Navbar';
-import { getJobsApi } from '../services/allApis';
+import { applyForJobApi, getApplicationsApi, getJobsApi } from '../services/allApis';
 import { format, formatDistanceToNow } from 'date-fns'
+import { useSelector } from 'react-redux';
 
 const FreelancerDashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -13,6 +14,7 @@ const FreelancerDashboard = () => {
   const [selectedBudget, setSelectedBudget] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [appliedTasks, setAppliedTasks] = useState([]);
+  const token = useSelector((state) => state.auth.token)
 
   const budgetRanges = {
     1: [0, 500],
@@ -33,6 +35,22 @@ const FreelancerDashboard = () => {
     "Database"
   ];
 
+  const applyForJob = async (jobId) => {
+    try {
+      const header = {
+        Authorization: `Bearer ${token}`
+      }
+
+      await applyForJobApi(jobId, header)
+
+      setAppliedTasks(prev => [...prev, jobId])
+      alert('Applied Succesfully')
+    } catch (error) {
+      console.error('Failed to apply for task :', error)
+      alert('Could not apply to this task. Please try again.')
+    }
+  }
+
   const fetchAllJobs = async () => {
     setLoading(true)
     try {
@@ -43,7 +61,7 @@ const FreelancerDashboard = () => {
 
       const response = await getJobsApi(filters)
       setTasks(response.data.jobs)
-      console.log('Fteched Jobs', response);
+      console.log('Fetched Jobs', response);
 
     } catch (error) {
       console.log("Error fetching jobs!!")
@@ -54,6 +72,21 @@ const FreelancerDashboard = () => {
     fetchAllJobs()
   }, [searchTerm, selectedCategories])
 
+  const fetchAppliedJobs = async () => {
+    if (!token) return
+    const header = {
+      Authorization: `Bearer ${token}`
+    }
+    const response = await getApplicationsApi(header);
+    console.log('Fetched Applied Jobs', response);
+    const appliedJobIds = response.data.map(app => app.jobId._id)
+    
+    setAppliedTasks(appliedJobIds)
+  }
+
+  useEffect(() => {
+    fetchAppliedJobs()
+  }, [token])
 
 
   const filteredTasks = tasks.filter((task) => {
@@ -96,11 +129,6 @@ const FreelancerDashboard = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const applyForTask = (taskId) => {
-    if (!appliedTasks.includes(taskId)) {
-      setAppliedTasks([...appliedTasks, taskId]);
-    }
-  };
 
 
   return (
@@ -213,7 +241,7 @@ const FreelancerDashboard = () => {
           <div className="space-y-4">
             {filteredTasks.length > 0 ? (
               filteredTasks.map((task) => (
-                <div key={task.id} className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-md">
+                <div key={task._id} className="bg-white shadow rounded-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-md">
                   <div className="p-5">
                     <div className="flex justify-between items-start">
                       <div>
@@ -240,7 +268,7 @@ const FreelancerDashboard = () => {
                       </div>
 
                       <div className="mt-3 sm:mt-0">
-                        {appliedTasks.includes(task.id) ? (
+                        {appliedTasks.includes(task._id) ? (
                           <button
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 focus:outline-none cursor-default"
                             disabled
@@ -249,7 +277,7 @@ const FreelancerDashboard = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => applyForTask(task.id)}
+                            onClick={() => applyForJob(task._id)}
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
                             Apply Now <ChevronRight className="h-4 w-4 ml-1" />
