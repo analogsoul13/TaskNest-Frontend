@@ -3,6 +3,7 @@ import Auth from './pages/Auth'
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
+import MyTasks from './components/MyTasks'
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
       <Route path='/' element={<Auth/>} />
       <Route path='/dashboard' element={<Dashboard/>} />
       <Route path='/home' element={<Home/>} />
+      <Route path='/mytasks' element={<MyTasks/>} />
     </Routes>
     </>
   )
