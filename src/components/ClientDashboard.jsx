@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X } from 'lucide-react';
-import { createJobApi, getJobsApi } from '../services/allApis';
+import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X, EyeIcon, Trash, Edit } from 'lucide-react';
+import { createJobApi, deleteJobApi, getMyJobsApi } from '../services/allApis';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../redux/slices/authSlice';
 
 const ClientDashboard = () => {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ title: '', description: '', budget: '', dueDate: '', category: '' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', budget: '', deadline: '', category: '' });
   const userName = useSelector((state) => state.auth.userInfo.name)
   const userEmail = useSelector((state) => state.auth.userInfo.email)
+  const userPic = useSelector((state) => state.auth.userInfo.profilePic)
   const token = useSelector((state) => state.auth.token)
   const [activeRequests, setActiveRequests] = useState([]);
 
@@ -17,17 +20,22 @@ const ClientDashboard = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
+  const nav = useNavigate()
+  const dispatch = useDispatch()
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const header = {
           Authorization: `Bearer ${token}`
         }
-        const res = await getJobsApi(header)
-        const jobs = res.data?.jobs || res
-        setTasks(jobs)
+        const res = await getMyJobsApi(header)
+        console.log("Fetched Jobs:", res);
+
+        setTasks(res.data)
       } catch (error) {
         console.error('Error fetching jobs :', error)
+        setTasks([])
       }
     }
     fetchJobs()
@@ -41,7 +49,7 @@ const ClientDashboard = () => {
       description: newTask.description,
       category: newTask.category,
       budget: newTask.budget,
-      deadline: newTask.dueDate
+      deadline: newTask.deadline
     }
 
     try {
@@ -57,14 +65,13 @@ const ClientDashboard = () => {
 
 
       setShowNewTaskModal(false)
-      setNewTask({ title: '', description: '', budget: '', dueDate: '', category: '' })
+      setNewTask({ title: '', description: '', budget: '', deadline: '', category: '' })
       toast.success("Job created succesfully!")
     } catch (error) {
       console.error('Error creating job:', error)
       toast.error(error.response?.data?.message || 'Job creation failed')
     }
   }
-  // Sample data - in a real application, this would come from an API
 
 
   const categories = [
@@ -79,6 +86,21 @@ const ClientDashboard = () => {
     "Voice Over",
     "Database"
   ];
+
+  const handleDelete = async (jobId) => {
+    try {
+      const header = {
+        Authorization: `Bearer ${token}`
+      }
+      await deleteJobApi(jobId, header)
+      toast.success("Job deleted succesfully")
+
+      setTasks(prev => prev.filter(task => task._id !== jobId))
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      toast.error(error.response?.data?.message || "Failed to delete job")
+    }
+  }
 
   const acceptRequest = (requestId) => {
     setActiveRequests(activeRequests.map(request =>
@@ -102,6 +124,11 @@ const ClientDashboard = () => {
     const { name, value } = e.target;
     setNewTask({ ...newTask, [name]: value });
   };
+
+  const handleLogout = () => {
+    dispatch(logout())
+    nav('/')
+  }
 
   const viewTaskRequests = (taskId) => {
     setSelectedTaskId(taskId);
@@ -135,24 +162,30 @@ const ClientDashboard = () => {
                   className="flex items-center space-x-2"
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
                 >
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                    C
-                  </div>
+                  {userPic ? (
+                    <img
+                      src={userPic}
+                      alt="User Profile"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                      {userName?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+
                   <span className="font-medium hidden sm:block">{userName}</span>
                   <ChevronDown size={16} />
                 </button>
 
                 {showUserDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                     <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
                       <div className="font-medium">Client Dashboard</div>
                       <div className="text-gray-500">{userEmail}</div>
                     </div>
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Profile Settings
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Account Settings
+                      Profile
                     </a>
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       Help & Support
@@ -160,11 +193,7 @@ const ClientDashboard = () => {
                     <hr className="my-1" />
                     <button
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      onClick={() => {
-                        // Handle logout logic here
-                        alert('Logout clicked - implement your logout logic here');
-                        setShowUserDropdown(false);
-                      }}
+                      onClick={handleLogout}
                     >
                       Logout
                     </button>
@@ -279,26 +308,30 @@ const ClientDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {tasks.map(task => (
-                          <tr key={task.id} className="hover:bg-gray-50">
+                          <tr key={task._id} className="hover:bg-gray-50">
                             <td className="py-3 px-4">
                               <div className="font-medium text-gray-900">{task.title}</div>
                               <div className="text-sm text-gray-500 truncate max-w-xs">{task.description}</div>
                             </td>
                             <td className="py-3 px-4 text-gray-900">{task.budget}</td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-1 text-xs rounded-full ${task.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {task.status}
-                              </span>
+                            <td className="py-3 px-4 text-gray-900">{task.category}</td>
+                            <td className="py-3 px-4 text-gray-900">
+                              <button className="text-blue-600 hover:text-blue-800"
+                                onClick={() => viewTaskRequests(task.id)}>
+                                <EyeIcon size={18} />
+                              </button>
                             </td>
-                            <td className="py-3 px-4 text-gray-900">{task.requests}</td>
-                            <td className="py-3 px-4 text-gray-900">{new Date(task.dueDate).toLocaleDateString()}</td>
-                            <td className="py-3 px-4">
-                              <button
-                                className="text-blue-600 hover:text-blue-800"
-                                onClick={() => viewTaskRequests(task.id)}
+                            <td className="py-3 px-4 text-gray-900">{new Date(task.deadline).toLocaleDateString()}</td>
+                            <td className="flex justify-between items-center p-6">
+                              <button onClick={() => handleDelete(task._id)}
+                                className="text-red-600 hover:text-red-800"
                               >
-                                View Requests
+                                <Trash size={18} />
+                              </button>
+                              <button 
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Edit size={18}/>
                               </button>
                             </td>
                           </tr>
@@ -461,7 +494,7 @@ const ClientDashboard = () => {
                       name="budget"
                       value={newTask.budget}
                       onChange={handleChange}
-                      placeholder="$"
+                      placeholder="₹"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -470,10 +503,8 @@ const ClientDashboard = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                     <input
                       type="date"
-                      name="dueDate"
-                      value={newTask.dueDate}
+                      name="deadline"
                       onChange={handleChange}
-                      placeholder="Apr 30, 2025"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
