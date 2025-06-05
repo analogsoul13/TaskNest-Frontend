@@ -5,6 +5,10 @@ export const getJobsApi = async () => {
     return await commonApi(`${BASE_URL}/jobs`, "GET")
 }
 
+export const getMyJobsApi = async (header) => {
+    return await commonApi(`${BASE_URL}/myjobs`, "GET", header)
+}
+
 export const applyForJobApi = async (jobId, header) => {
     return await commonApi(`${BASE_URL}/jobs/apply`, "POST", header, { jobId })
 }
@@ -15,4 +19,8 @@ export const getApplicationsApi = async (header) => {
 
 export const createJobApi = async (header, jobData) => {
     return await commonApi(`${BASE_URL}/jobs`, "POST", header, jobData)
+}
+
+export const deleteJobApi = async (jobId, header) => {
+    return await commonApi(`${BASE_URL}/jobs/${jobId}`, "DELETE", header, jobId)
 }
