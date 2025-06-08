@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X, EyeIcon, Trash, Edit } from 'lucide-react';
-import { createJobApi, deleteJobApi, getMyJobsApi } from '../services/allApis';
+import { createJobApi, deleteJobApi, getApplicationsApi, getMyJobsApi } from '../services/allApis';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -8,13 +8,12 @@ import { logout } from '../redux/slices/authSlice';
 
 const ClientDashboard = () => {
   const [tasks, setTasks] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [newTask, setNewTask] = useState({ title: '', description: '', budget: '', deadline: '', category: '' });
   const userName = useSelector((state) => state.auth.userInfo.name)
   const userEmail = useSelector((state) => state.auth.userInfo.email)
   const userPic = useSelector((state) => state.auth.userInfo.profilePic)
   const token = useSelector((state) => state.auth.token)
-  const [activeRequests, setActiveRequests] = useState([]);
-
   const [activeTab, setActiveTab] = useState('tasks');
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -24,21 +23,27 @@ const ClientDashboard = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchData = async () => {
       try {
         const header = {
           Authorization: `Bearer ${token}`
         }
-        const res = await getMyJobsApi(header)
-        console.log("Fetched Jobs:", res);
 
-        setTasks(res.data)
+        const [jobRes, applicationsRes] = await Promise.all([
+          getMyJobsApi(header),
+          getApplicationsApi(header)
+        ])
+
+        setTasks(jobRes.data)
+        setApplications(applicationsRes.data)
+        console.log('Applications Received :',applicationsRes.data)
+
       } catch (error) {
         console.error('Error fetching jobs :', error)
         setTasks([])
       }
     }
-    fetchJobs()
+    fetchData()
   }, [token])
 
   const handleCreateTask = async (e) => {
@@ -106,7 +111,7 @@ const ClientDashboard = () => {
     setActiveRequests(activeRequests.map(request =>
       request.id === requestId
         ? { ...request, status: 'Accepted' }
-        : request.id !== requestId && request.taskId === activeRequests.find(r => r.id === requestId).taskId
+        : request.id !== requestId && request.jobId._id === activeRequests.find(r => r.id === requestId).taskId
           ? { ...request, status: 'Rejected' }
           : request
     ));
@@ -284,7 +289,7 @@ const ClientDashboard = () => {
               {activeTab === 'tasks' && (
                 <>
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-800">My Tasks</h2>
+                    <h2 className="text-xl font-semibold text-gray-800">Tasks Created by You</h2>
                     <button
                       className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                       onClick={() => setShowNewTaskModal(true)}
@@ -328,10 +333,10 @@ const ClientDashboard = () => {
                               >
                                 <Trash size={18} />
                               </button>
-                              <button 
+                              <button
                                 className="text-red-600 hover:text-red-800"
                               >
-                                <Edit size={18}/>
+                                <Edit size={18} />
                               </button>
                             </td>
                           </tr>
@@ -353,7 +358,7 @@ const ClientDashboard = () => {
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-800">
                       {selectedTaskId ?
-                        `Requests for: ${tasks.find(t => t.id === selectedTaskId)?.title}` :
+                        `Requests for: ${tasks.find(t => t._id === selectedTaskId)?.title}` :
                         'All Freelancer Requests'}
                     </h2>
                     <button
@@ -365,41 +370,48 @@ const ClientDashboard = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {activeRequests
-                      .filter(request => !selectedTaskId || request.taskId === selectedTaskId)
+                    {applications
+                      .filter(request => !selectedTaskId || request.jobId === selectedTaskId)
                       .map(request => (
-                        <div key={request.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <div key={request._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                             <div className="mb-4 md:mb-0">
-                              <h3 className="font-medium text-gray-900">{request.freelancer}</h3>
+                              <h3 className="font-medium text-gray-900">{request.candidateId.name}</h3>
                               <p className="text-sm text-gray-500 mt-1">
-                                Task: {tasks.find(t => t.id === request.taskId)?.title}
+                                Task: {tasks.find(t => t._id === request.jobId._id)?.title}
                               </p>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className="text-gray-900 font-medium">{request.price}</span>
+                              <span className="text-gray-900 font-medium">₹{request.jobId.budget}</span>
                               <span className="text-gray-500">•</span>
-                              <span className="text-gray-900">{request.deliveryTime}</span>
+                              {
+                                request.candidateId.profilePic ?
+                                <img src={request.candidateId.profilePic} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                                :
+                                <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F256%2F9131%2F9131529.png&f=1&nofb=1&ipt=9f9092f256a42b9e4087f271286d1ff3ce19bb74a9d9538192377f6405a4ac74" alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                              }
+                              
                             </div>
                           </div>
 
                           <div className="mt-4">
-                            <p className="text-gray-700">{request.proposal}</p>
+                            <p className="text-gray-700">Requested By : {request.candidateId.email}</p>
+                            <p className="text-gray-700">Status : {request.status}</p>
                           </div>
 
                           <div className="mt-4 flex justify-between items-center">
                             {request.status === 'Pending' ? (
                               <div className="flex space-x-3">
                                 <button
-                                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-                                  onClick={() => acceptRequest(request.id)}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
+                                  onClick={() => acceptRequest(request._id)}
                                 >
                                   <Check size={16} className="mr-1" />
                                   Accept Offer
                                 </button>
                                 <button
-                                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center"
-                                  onClick={() => rejectRequest(request.id)}
+                                  className="px-4 py-2 border border-gray-300 bg-red-600 text-gray-50 rounded-md hover:bg-red-400 flex items-center"
+                                  onClick={() => rejectRequest(request._id)}
                                 >
                                   <X size={16} className="mr-1" />
                                   Decline
@@ -416,7 +428,7 @@ const ClientDashboard = () => {
                         </div>
                       ))}
 
-                    {activeRequests.filter(request => !selectedTaskId || request.taskId === selectedTaskId).length === 0 && (
+                    {applications.filter(request => !selectedTaskId || request.jobId._id === selectedTaskId).length === 0 && (
                       <div className="text-center py-12">
                         <p className="text-gray-500">No requests found for this task yet.</p>
                       </div>
