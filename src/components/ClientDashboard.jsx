@@ -36,7 +36,7 @@ const ClientDashboard = () => {
 
         setTasks(jobRes.data)
         setApplications(applicationsRes.data)
-        console.log('Applications Received :',applicationsRes.data)
+        console.log('Applications Received :', applicationsRes.data)
 
       } catch (error) {
         console.error('Error fetching jobs :', error)
@@ -147,7 +147,14 @@ const ClientDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-blue-600">TaskNest</h1>
+              <div className="flex items-center justify-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-blue-400 rounded-xl flex items-center justify-center">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">TaskNest</h1>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="relative">
@@ -236,10 +243,6 @@ const ClientDashboard = () => {
                   Messages
                 </button>
                 <button className="flex items-center px-3 py-2 rounded-md whitespace-nowrap text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  <Calendar size={16} className="mr-2" />
-                  Calendar
-                </button>
-                <button className="flex items-center px-3 py-2 rounded-md whitespace-nowrap text-sm font-medium text-gray-700 hover:bg-gray-50">
                   <Settings size={16} className="mr-2" />
                   Settings
                 </button>
@@ -269,10 +272,6 @@ const ClientDashboard = () => {
                   <li className="flex items-center p-3 rounded-md cursor-pointer text-gray-700 hover:bg-gray-50">
                     <MessageSquare size={20} className="mr-3" />
                     <span className="font-medium">Messages</span>
-                  </li>
-                  <li className="flex items-center p-3 rounded-md cursor-pointer text-gray-700 hover:bg-gray-50">
-                    <Calendar size={20} className="mr-3" />
-                    <span className="font-medium">Calendar</span>
                   </li>
                   <li className="flex items-center p-3 rounded-md cursor-pointer text-gray-700 hover:bg-gray-50">
                     <Settings size={20} className="mr-3" />
@@ -386,11 +385,11 @@ const ClientDashboard = () => {
                               <span className="text-gray-500">•</span>
                               {
                                 request.candidateId.profilePic ?
-                                <img src={request.candidateId.profilePic} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-                                :
-                                <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F256%2F9131%2F9131529.png&f=1&nofb=1&ipt=9f9092f256a42b9e4087f271286d1ff3ce19bb74a9d9538192377f6405a4ac74" alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                                  <img src={request.candidateId.profilePic} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                                  :
+                                  <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F256%2F9131%2F9131529.png&f=1&nofb=1&ipt=9f9092f256a42b9e4087f271286d1ff3ce19bb74a9d9538192377f6405a4ac74" alt="Profile" className="w-8 h-8 rounded-full object-cover" />
                               }
-                              
+
                             </div>
                           </div>
 
