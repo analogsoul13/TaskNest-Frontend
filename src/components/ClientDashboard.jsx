@@ -366,19 +366,28 @@ const ClientDashboard = () => {
               {activeTab === 'requests' && (
                 <>
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-sm sm:text-xl font-semibold text-gray-800">
                       {selectedTaskId ?
                         `Requests for: ${tasks.find(t => t._id === selectedTaskId)?.title}` :
                         'All Freelancer Requests'}
                     </h2>
-                    <button
-                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                      onClick={() => {
-                        setSelectedTaskId(null)
-                        setActiveTab('tasks')}}
-                    >
-                      Back to Tasks
-                    </button>
+                    <div className='flex space-x-4'>
+                      <button
+                        className="px-2 sm:px-4 py-2 border border-gray-300 text-gray-700 text-xs sm:text-sm rounded-md hover:bg-gray-50"
+                        onClick={() => {
+                          setSelectedTaskId(null)
+                          setActiveTab('tasks')
+                        }}
+                      >
+                        Back to Tasks
+                      </button>
+                      <button
+                        className="px-2 sm:px-4 py-2 border border-gray-300 text-gray-700 text-xs sm:text-sm rounded-md hover:bg-gray-50"
+                        onClick={() => setSelectedTaskId(null)}
+                      >
+                        All Requests
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-4">
