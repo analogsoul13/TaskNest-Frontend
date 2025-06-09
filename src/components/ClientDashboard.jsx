@@ -46,6 +46,13 @@ const ClientDashboard = () => {
     fetchData()
   }, [token])
 
+  const viewReqCount = Array.isArray(applications) ? applications.reduce((acc, req) => {
+    const jobId = req.jobId._id
+    acc[jobId] = (acc[jobId] || 0) + 1
+    return acc
+  }, {})
+    : {}
+
   const handleCreateTask = async (e) => {
     e.preventDefault()
 
@@ -242,9 +249,11 @@ const ClientDashboard = () => {
                   <MessageSquare size={16} className="mr-2" />
                   Messages
                 </button>
-                <button className="flex items-center px-3 py-2 rounded-md whitespace-nowrap text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <button className={`flex items-center px-3 py-2 rounded-md whitespace-nowrap text-sm font-medium ${activeTab === 'profile' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setActiveTab('profile')}
+                >
                   <Settings size={16} className="mr-2" />
-                  Settings
+                  Profile
                 </button>
               </div>
             </div>
@@ -273,7 +282,8 @@ const ClientDashboard = () => {
                     <MessageSquare size={20} className="mr-3" />
                     <span className="font-medium">Messages</span>
                   </li>
-                  <li className="flex items-center p-3 rounded-md cursor-pointer text-gray-700 hover:bg-gray-50">
+                  <li className={`flex items-center p-3 rounded-md cursor-pointer ${activeTab === 'profile' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => setActiveTab('profile')}>
                     <Settings size={20} className="mr-3" />
                     <span className="font-medium">Settings</span>
                   </li>
@@ -319,9 +329,10 @@ const ClientDashboard = () => {
                             </td>
                             <td className="py-3 px-4 text-gray-900">{task.budget}</td>
                             <td className="py-3 px-4 text-gray-900">{task.category}</td>
-                            <td className="py-3 px-4 text-gray-900">
-                              <button className="text-blue-600 hover:text-blue-800"
-                                onClick={() => viewTaskRequests(task.id)}>
+                            <td className="flex justify-center py-3 px-4 text-gray-900">
+                              <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                                onClick={() => viewTaskRequests(task._id)}>
+                                {viewReqCount[task._id] || 0}
                                 <EyeIcon size={18} />
                               </button>
                             </td>
@@ -370,7 +381,7 @@ const ClientDashboard = () => {
 
                   <div className="space-y-4">
                     {applications
-                      .filter(request => !selectedTaskId || request.jobId === selectedTaskId)
+                      .filter(request => !selectedTaskId || request.jobId._id === selectedTaskId)
                       .map(request => (
                         <div key={request._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
