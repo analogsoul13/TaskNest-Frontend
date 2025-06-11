@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X, EyeIcon, Trash, Edit } from 'lucide-react';
+import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X, EyeIcon, Trash, Edit, CheckCircle, XCircle } from 'lucide-react';
 import { createJobApi, deleteJobApi, getApplicationsApi, getMyJobsApi, updateApplicationStatusApi } from '../services/allApis';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
@@ -419,7 +419,12 @@ const ClientDashboard = () => {
                     {applications
                       .filter(request => !selectedTaskId || request.jobId._id === selectedTaskId)
                       .map(request => (
-                        <div key={request._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <div key={request._id} className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${request.status === "Accepted"
+                          ? "border-green-500 bg-green-50"
+                          : request.status === "Rejected"
+                            ? "border-red-400 bg-red-50"
+                            : "border-gray-200 bg-white"
+                          }`}>
                           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                             <div className="mb-4 md:mb-0">
                               <h3 className="font-medium text-gray-900">{request.candidateId.name}</h3>
@@ -464,9 +469,12 @@ const ClientDashboard = () => {
                                 </button>
                               </div>
                             ) : (
-                              <div className={`px-3 py-1 rounded-full text-sm ${request.status === 'Accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              <div className={`px-3 flex items-center gap-2 py-1 rounded-full text-sm ${request.status === 'Accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 }`}>
-                                {request.status}
+                                {/* Check icon */}
+                                {request.status} {request.status === "Accepted" && <CheckCircle className="text-green-600 mr-2" size={16} />}
+                                {/* X Icon */}
+                                {request.status === "Rejected" && <XCircle className="text-red-600 mr-2" size={16} />}
                               </div>
                             )}
                             <button className="text-blue-600 hover:text-blue-800">Message</button>
