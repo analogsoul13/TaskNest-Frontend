@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAppliedJobs } from '../redux/slices/appliedJobsSlice';
 
 const MyTasks = () => {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('All');
 
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
