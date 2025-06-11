@@ -18,17 +18,17 @@ const MyTasks = () => {
   }, [dispatch,token]);
 
   const filterTasks = (status) => {
-    if (status === 'all') return jobs;
-    return jobs.filter(task => task.status.toLowerCase() === status);
+    if (status === 'All') return jobs;
+    return jobs.filter(task => task.status === status);
   };
 
   const filteredTasks = filterTasks(activeTab);
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'accepted':
+      case 'Accepted':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'rejected':
+      case 'Rejected':
         return <XCircle className="w-5 h-5 text-red-500" />;
       default:
         return <Clock className="w-5 h-5 text-yellow-500" />;
@@ -38,9 +38,9 @@ const MyTasks = () => {
   const getStatusBadge = (status) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium";
     switch (status) {
-      case 'accepted':
+      case 'Accepted':
         return `${baseClasses} bg-green-100 text-green-800`;
-      case 'rejected':
+      case 'Rejected':
         return `${baseClasses} bg-red-100 text-red-800`;
       default:
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
@@ -49,9 +49,9 @@ const MyTasks = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'accepted':
+      case 'Accepted':
         return 'Accepted';
-      case 'rejected':
+      case 'Rejected':
         return 'Rejected';
       default:
         return 'Pending';
@@ -59,10 +59,10 @@ const MyTasks = () => {
   };
 
   const tabs = [
-    { id: 'all', label: 'All Tasks', count: jobs.length },
-    { id: 'pending', label: 'Applied', count: jobs.filter(t => t.status.toLowerCase() === 'pending').length },
-    { id: 'accepted', label: 'Accepted', count: jobs.filter(t => t.status.toLowerCase() === 'accepted').length },
-    { id: 'rejected', label: 'Rejected', count: jobs.filter(t => t.status.toLowerCase(  ) === 'rejected').length }
+    { id: 'All', label: 'All Tasks', count: jobs.length },
+    { id: 'Pending', label: 'Applied', count: jobs.filter(t => t.status === 'Pending').length },
+    { id: 'Accepted', label: 'Accepted', count: jobs.filter(t => t.status === 'Accepted').length },
+    { id: 'Rejected', label: 'Rejected', count: jobs.filter(t => t.status=== 'Rejected').length }
   ];
 
   return (
