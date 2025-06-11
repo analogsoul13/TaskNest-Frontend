@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, Search, Plus, Calendar, User, FileText, MessageSquare, Settings, ChevronDown, Check, X, EyeIcon, Trash, Edit } from 'lucide-react';
-import { createJobApi, deleteJobApi, getApplicationsApi, getMyJobsApi } from '../services/allApis';
+import { createJobApi, deleteJobApi, getApplicationsApi, getMyJobsApi, updateApplicationStatusApi } from '../services/allApis';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -114,21 +114,46 @@ const ClientDashboard = () => {
     }
   }
 
-  const acceptRequest = (requestId) => {
-    setActiveRequests(activeRequests.map(request =>
-      request.id === requestId
-        ? { ...request, status: 'Accepted' }
-        : request.id !== requestId && request.jobId._id === activeRequests.find(r => r.id === requestId).taskId
-          ? { ...request, status: 'Rejected' }
-          : request
-    ));
-  };
+  const acceptRequest = async (requestId, jobId) => {
+    try {
+      const header = {
+        Authorization: `Bearer ${token}`
+      }
+      await updateApplicationStatusApi(requestId, "Accepted", header)
 
-  const rejectRequest = (requestId) => {
-    setActiveRequests(activeRequests.map(request =>
-      request.id === requestId ? { ...request, status: 'Rejected' } : request
-    ));
-  };
+      setApplications(prev => prev.map(request => {
+        if (request._id === requestId) {
+          return { ...request, status: "Accepted" }
+        } else if (request.jobId._id === jobId && request._id !== requestId) {
+          return { ...request, status: "Rejected" }
+        }
+        return request
+      }))
+
+      toast.success("Application status updated succesfully")
+
+    } catch (error) {
+      toast.error(`Error accepting request: ${error.message}`)
+
+    }
+  }
+
+  const rejectRequest = async (requestId) => {
+    try {
+      const header = {
+        Authorization: `Bearer ${token}`
+      }
+      await updateApplicationStatusApi(requestId, "Rejected", header);
+
+      setApplications(prev =>
+        prev.map(request =>
+          request._id === requestId ? { ...request, status: "Rejected" } : request
+        )
+      );
+    } catch (err) {
+      console.error("Error rejecting request:", err);
+    }
+  }
 
 
 
@@ -425,7 +450,7 @@ const ClientDashboard = () => {
                               <div className="flex space-x-3">
                                 <button
                                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
-                                  onClick={() => acceptRequest(request._id)}
+                                  onClick={() => acceptRequest(request._id, request.jobId._id)}
                                 >
                                   <Check size={16} className="mr-1" />
                                   Accept Offer

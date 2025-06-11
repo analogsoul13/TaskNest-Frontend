@@ -24,3 +24,7 @@ export const createJobApi = async (header, jobData) => {
 export const deleteJobApi = async (jobId, header) => {
     return await commonApi(`${BASE_URL}/jobs/${jobId}`, "DELETE", header, jobId)
 }
+
+export const updateApplicationStatusApi = async (applicationId, status, header) => {
+    return await commonApi(`${BASE_URL}/applications/status/${applicationId}`, "PUT", header, { status })
+}
