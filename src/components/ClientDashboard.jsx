@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../redux/slices/authSlice';
+import ProfileCard from './ProfileCard';
 
 const ClientDashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -310,7 +311,7 @@ const ClientDashboard = () => {
                   <li className={`flex items-center p-3 rounded-md cursor-pointer ${activeTab === 'profile' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
                     onClick={() => setActiveTab('profile')}>
                     <Settings size={20} className="mr-3" />
-                    <span className="font-medium">Settings</span>
+                    <span className="font-medium">Profile</span>
                   </li>
                 </ul>
               </nav>
@@ -488,6 +489,15 @@ const ClientDashboard = () => {
                       </div>
                     )}
                   </div>
+                </>
+              )}
+
+              {activeTab === 'profile' && (
+                <>
+                  <ProfileCard
+                    name={userName}
+                    email={userEmail}
+                    profilePic={userPic} />
                 </>
               )}
             </div>

@@ -1,6 +1,14 @@
 import commonApi from "./commonApi";
 import BASE_URL from "./baseUrl";
 
+export const getUserProfileApi = async (header) => {
+    return await commonApi(`${BASE_URL}/profile`, "GET", header)
+}
+
+export const updateUserProfileApi = async (header, data) => {
+    return await commonApi(`${BASE_URL}/profile`, "PUT", header, data)
+}
+
 export const getJobsApi = async () => {
     return await commonApi(`${BASE_URL}/jobs`, "GET")
 }
