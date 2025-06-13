@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import MyTasks from './components/MyTasks'
 import { ToastContainer } from 'react-toastify'
+import ProfileCard from './components/ProfileCard'
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
       <Route path='/dashboard' element={<Dashboard/>} />
       <Route path='/home' element={<Home/>} />
       <Route path='/mytasks' element={<MyTasks/>} />
+      <Route path='/myprofile' element={<ProfileCard/>} />
     </Routes>
     <ToastContainer />
     </>
