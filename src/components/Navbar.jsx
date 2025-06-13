@@ -142,7 +142,7 @@ const Navbar = ({ toggleSidebar, sidebarOpen }) => {
             {isDashboard && (
               <button
                 onClick={handleToggleSidebar}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
               >
                 {sidebarOpen ? <X className="h-6 w-6" /> : <Filter className="h-6 w-6" />}
               </button>
