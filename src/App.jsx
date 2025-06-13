@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import MyTasks from './components/MyTasks'
 import { ToastContainer } from 'react-toastify'
 import ProfileCard from './components/ProfileCard'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
 
@@ -13,10 +14,10 @@ function App() {
     <>
     <Routes>
       <Route path='/' element={<Auth/>} />
-      <Route path='/dashboard' element={<Dashboard/>} />
-      <Route path='/home' element={<Home/>} />
-      <Route path='/mytasks' element={<MyTasks/>} />
-      <Route path='/myprofile' element={<ProfileCard/>} />
+      <Route path='/dashboard' element={<ProtectedRoute><Dashboard/></ProtectedRoute>} />
+      <Route path='/home' element={<ProtectedRoute><Home/></ProtectedRoute>} />
+      <Route path='/mytasks' element={<ProtectedRoute><MyTasks/></ProtectedRoute>} />
+      <Route path='/myprofile' element={<ProtectedRoute><ProfileCard/></ProtectedRoute>} />
     </Routes>
     <ToastContainer />
     </>
