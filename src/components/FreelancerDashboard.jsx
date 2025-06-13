@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import { applyForJobApi, getApplicationsApi, getJobsApi } from '../services/allApis';
 import { format, formatDistanceToNow } from 'date-fns'
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 const FreelancerDashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -44,10 +45,10 @@ const FreelancerDashboard = () => {
       await applyForJobApi(jobId, header)
 
       setAppliedTasks(prev => [...prev, jobId])
-      alert('Applied Succesfully')
+      toast.success("Succesfully applied.")
     } catch (error) {
       console.error('Failed to apply for task :', error)
-      alert('Could not apply to this task. Please try again.')
+      toast.error("Could not apply to this task. Please try again.")
     }
   }
 
