@@ -229,12 +229,6 @@ const ClientDashboard = () => {
                       <div className="font-medium">Client Dashboard</div>
                       <div className="text-gray-500">{userEmail}</div>
                     </div>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Profile
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Help & Support
-                    </a>
                     <hr className="my-1" />
                     <button
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -494,10 +488,7 @@ const ClientDashboard = () => {
 
               {activeTab === 'profile' && (
                 <>
-                  <ProfileCard
-                    name={userName}
-                    email={userEmail}
-                    profilePic={userPic} />
+                  <ProfileCard />
                 </>
               )}
             </div>
